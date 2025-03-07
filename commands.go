@@ -29,6 +29,10 @@ func commandHelp() error {
 	return nil
 }
 
+func commandMap() error {
+	return nil
+}
+
 func generateCommandRegistry() map[string]cliCommand {
 	registry = map[string]cliCommand{
 		"exit": {
@@ -40,6 +44,13 @@ func generateCommandRegistry() map[string]cliCommand {
 			name:        "help",
 			description: "Displays a help message",
 			callback:    commandHelp,
+		},
+		"map": {
+			name: "map",
+			description: `displays the names of 20 location areas in the Pokemon world. 
+			              Each subsequent call to map should display the next 20 locations, 
+						  and so on`,
+			callback: commandMap,
 		},
 	}
 	return registry
