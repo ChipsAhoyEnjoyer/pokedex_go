@@ -5,12 +5,18 @@ import (
 	"fmt"
 	"os"
 	"strings"
+
+	"github.com/ChipsAhoyEnjoyer/pokedex_go/internal/poke_api_helper_go"
 )
+
+const base_url = "https://pokeapi.co/api/v2/location-area/"
 
 func startRepl() {
 	commandRegistry := generateCommandRegistry()
 
 	user := bufio.NewScanner(os.Stdin)
+	config := poke_api_helper_go.Config{Next: base_url}
+
 	for {
 		fmt.Print("Pokedex > ")
 		user.Scan()
@@ -22,7 +28,7 @@ func startRepl() {
 			fmt.Println("Unknown command")
 			continue
 		} else {
-			err := command.callback()
+			err := command.callback(&config)
 			if err != nil {
 				fmt.Println(err)
 			}
