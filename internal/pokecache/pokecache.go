@@ -10,7 +10,7 @@ type CacheEntry struct {
 	Val       []byte
 }
 
-type Cache struct {
+type PokeCache struct {
 	Data map[string]CacheEntry
 	Mu   *sync.RWMutex
 }

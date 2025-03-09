@@ -63,11 +63,7 @@ func commandMapb(c *poke_api_helper_go.Config) error {
 	c.Next = new_config.Next
 	c.Prev = new_config.Prev
 	c.Result = new_config.Result
-
-	areas := c.GetAreas()
-	for _, area := range areas {
-		fmt.Println(area)
-	}
+	c.GetAreas()
 	return nil
 }
 
