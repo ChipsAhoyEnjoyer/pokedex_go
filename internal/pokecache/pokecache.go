@@ -11,22 +11,43 @@ type CacheEntry struct {
 }
 
 type PokeCache struct {
-	Data     map[string]CacheEntry
-	Mu       *sync.RWMutex
-	interval time.Time
+	Data map[string]CacheEntry
+	Mu   *sync.RWMutex
 }
 
-func NewPokeCache(i time.Time) *PokeCache {
-	return &PokeCache{
-		Data:     make(map[string]CacheEntry),
-		Mu:       &sync.RWMutex{},
-		interval: i,
+func NewPokeCache(interval time.Duration) *PokeCache {
+	cache := &PokeCache{
+		Data: make(map[string]CacheEntry),
+		Mu:   &sync.RWMutex{},
 	}
+	cache.readLoop(interval)
+	return cache
 }
 
 func (pC *PokeCache) Add(key string, val []byte) {
+	pC.Mu.Lock()
+	defer pC.Mu.Unlock()
 	pC.Data[key] = CacheEntry{
 		CreatedAt: time.Now(),
 		Val:       val,
 	}
+}
+
+func (pC *PokeCache) Get(key string) ([]byte, bool) {
+	pC.Mu.RLock()
+	defer pC.Mu.RUnlock()
+	cache, exists := pC.Data[key]
+	if !exists {
+		return nil, false
+	}
+	return cache.Val, true
+}
+
+func (pC *PokeCache) readLoop(interval time.Duration) {
+	for key, val := range pC.Data {
+		if time.Since(val.CreatedAt) >= interval {
+			delete(pC.Data, key)
+		}
+	}
+
 }
