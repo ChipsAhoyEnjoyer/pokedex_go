@@ -17,8 +17,8 @@ func startRepl() {
 	commandRegistry := generateCommandRegistry()
 
 	user := bufio.NewScanner(os.Stdin)
-	resp := &pokeAPIHelperGo.AreaRespBody{Next: base_url}
-	cache := pokeCache.NewPokeCache(5 * time.Second)
+	resp := &pokeAPIHelperGo.LocationAreas{Next: base_url}
+	resp.Cache = pokeCache.NewPokeCache(5 * time.Second)
 
 	for {
 		fmt.Print("Pokedex > ")
@@ -31,7 +31,7 @@ func startRepl() {
 			fmt.Println("Unknown command")
 			continue
 		} else {
-			err := command.callback(resp, cache)
+			err := command.callback(resp)
 			if err != nil {
 				fmt.Println(err)
 			}

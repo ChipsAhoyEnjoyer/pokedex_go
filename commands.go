@@ -6,7 +6,6 @@ import (
 	"os"
 
 	"github.com/ChipsAhoyEnjoyer/pokedex_go/internal/pokeAPIHelperGo"
-	"github.com/ChipsAhoyEnjoyer/pokedex_go/internal/pokeCache"
 )
 
 var registry map[string]cliCommand
@@ -14,19 +13,16 @@ var registry map[string]cliCommand
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(
-		*pokeAPIHelperGo.AreaRespBody,
-		*pokeCache.PokeCache,
-	) error
+	callback    func(*pokeAPIHelperGo.LocationAreas) error
 }
 
-func commandExit(currMap *pokeAPIHelperGo.AreaRespBody, cache *pokeCache.PokeCache) error {
+func commandExit(locations *pokeAPIHelperGo.LocationAreas) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(currMap *pokeAPIHelperGo.AreaRespBody, cache *pokeCache.PokeCache) error {
+func commandHelp(locations *pokeAPIHelperGo.LocationAreas) error {
 	fmt.Println("\nWelcome to the Pokedex!")
 	fmt.Print("Usage:\n\n")
 	for com, cliCom := range registry {
@@ -36,17 +32,17 @@ func commandHelp(currMap *pokeAPIHelperGo.AreaRespBody, cache *pokeCache.PokeCac
 	return nil
 }
 
-func commandMap(currMap *pokeAPIHelperGo.AreaRespBody, cache *pokeCache.PokeCache) error {
-	resp := pokeAPIHelperGo.AreaRespBody{}
+func commandMap(locations *pokeAPIHelperGo.LocationAreas) error {
+	resp := pokeAPIHelperGo.LocationAreas{}
 
-	if currMap.Next == "" {
+	if locations.Next == "" {
 		return fmt.Errorf("no more areas to explore")
-	} else if val, exists := cache.Get(currMap.Next); exists {
+	} else if val, exists := locations.Cache.Get(locations.Next); exists {
 		if err := json.Unmarshal(val, &resp); err != nil {
 			return fmt.Errorf("error unmarshaling data from cache: '%v'", err)
 		}
 	} else {
-		new_loc, err := pokeAPIHelperGo.ReturnLocations(currMap.Next)
+		new_loc, err := pokeAPIHelperGo.ReturnLocations(locations.Next)
 		if err != nil {
 			return err
 		}
@@ -55,30 +51,30 @@ func commandMap(currMap *pokeAPIHelperGo.AreaRespBody, cache *pokeCache.PokeCach
 		if err2 != nil {
 			return fmt.Errorf("error marshaling data to add to cache: %v", err2)
 		}
-		cache.Add(currMap.Next, jsonData)
+		locations.Cache.Add(locations.Next, jsonData)
 	}
 
-	currMap.Next = resp.Next
-	currMap.Prev = resp.Prev
-	currMap.Result = resp.Result
+	locations.Next = resp.Next
+	locations.Prev = resp.Prev
+	locations.Result = resp.Result
 
-	for _, area := range currMap.Result {
+	for _, area := range locations.Result {
 		fmt.Println(area)
 	}
 	return nil
 }
 
-func commandMapb(currMap *pokeAPIHelperGo.AreaRespBody, cache *pokeCache.PokeCache) error {
-	resp := pokeAPIHelperGo.AreaRespBody{}
+func commandMapb(locations *pokeAPIHelperGo.LocationAreas) error {
+	resp := pokeAPIHelperGo.LocationAreas{}
 
-	if currMap.Prev == "" {
+	if locations.Prev == "" {
 		return fmt.Errorf("no more areas to explore")
-	} else if val, exists := cache.Get(currMap.Prev); exists {
+	} else if val, exists := locations.Cache.Get(locations.Prev); exists {
 		if err := json.Unmarshal(val, &resp); err != nil {
 			return fmt.Errorf("error unmarshaling data from cache: '%v'", err)
 		}
 	} else {
-		new_loc, err := pokeAPIHelperGo.ReturnLocations(currMap.Prev)
+		new_loc, err := pokeAPIHelperGo.ReturnLocations(locations.Prev)
 		if err != nil {
 			return err
 		}
@@ -87,14 +83,14 @@ func commandMapb(currMap *pokeAPIHelperGo.AreaRespBody, cache *pokeCache.PokeCac
 		if err2 != nil {
 			return fmt.Errorf("error marshaling data to add to cache: %v", err2)
 		}
-		cache.Add(currMap.Prev, jsonData)
+		locations.Cache.Add(locations.Prev, jsonData)
 	}
 
-	currMap.Next = resp.Next
-	currMap.Prev = resp.Prev
-	currMap.Result = resp.Result
+	locations.Next = resp.Next
+	locations.Prev = resp.Prev
+	locations.Result = resp.Result
 
-	for _, area := range currMap.Result {
+	for _, area := range locations.Result {
 		fmt.Println(area)
 	}
 	return nil
