@@ -5,8 +5,10 @@ import (
 	"fmt"
 	"os"
 	"strings"
+	"time"
 
-	"github.com/ChipsAhoyEnjoyer/pokedex_go/internal/poke_api_helper_go"
+	"github.com/ChipsAhoyEnjoyer/pokedex_go/internal/pokeAPIHelperGo"
+	"github.com/ChipsAhoyEnjoyer/pokedex_go/internal/pokeCache"
 )
 
 const base_url = "https://pokeapi.co/api/v2/location-area/"
@@ -15,7 +17,8 @@ func startRepl() {
 	commandRegistry := generateCommandRegistry()
 
 	user := bufio.NewScanner(os.Stdin)
-	config := poke_api_helper_go.Config{Next: base_url}
+	resp := &pokeAPIHelperGo.AreaRespBody{Next: base_url}
+	cache := pokeCache.NewPokeCache(5 * time.Second)
 
 	for {
 		fmt.Print("Pokedex > ")
@@ -28,7 +31,7 @@ func startRepl() {
 			fmt.Println("Unknown command")
 			continue
 		} else {
-			err := command.callback(&config)
+			err := command.callback(resp, cache)
 			if err != nil {
 				fmt.Println(err)
 			}

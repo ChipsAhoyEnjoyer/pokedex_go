@@ -52,11 +52,11 @@ func (pC *PokeCache) Get(key string) ([]byte, bool) {
 }
 
 func (pC *PokeCache) readLoop(interval time.Duration) {
+	pC.Mu.Lock()
+	defer pC.Mu.Unlock()
 	for key, val := range pC.Data {
 		if time.Since(val.CreatedAt) >= interval {
-			pC.Mu.Lock()
 			delete(pC.Data, key)
-			pC.Mu.Unlock()
 		}
 	}
 
