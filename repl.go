@@ -5,33 +5,28 @@ import (
 	"fmt"
 	"os"
 	"strings"
-	"time"
-
-	"github.com/ChipsAhoyEnjoyer/pokedex_go/internal/pokeAPIHelperGo"
-	"github.com/ChipsAhoyEnjoyer/pokedex_go/internal/pokeCache"
 )
-
-const base_url = "https://pokeapi.co/api/v2/location-area/"
 
 func startRepl() {
 	commandRegistry := generateCommandRegistry()
 
-	user := bufio.NewScanner(os.Stdin)
-	resp := &pokeAPIHelperGo.LocationAreas{Next: base_url}
-	resp.Cache = pokeCache.NewPokeCache(5 * time.Second)
+	response := bufio.NewScanner(os.Stdin)
+	user := newUser()
 
 	for {
 		fmt.Print("Pokedex > ")
-		user.Scan()
-		userInput := cleanInput(user.Text())[0]
-		if len(userInput) == 0 {
+		response.Scan()
+		if response.Text() == "" {
+			fmt.Println("no input...")
 			continue
 		}
-		if command, ok := commandRegistry[userInput]; !ok {
+		fullInput := cleanInput(response.Text())
+		userCommand, userInput := fullInput[0], fullInput[1]
+		if command, ok := commandRegistry[userCommand]; !ok {
 			fmt.Println("Unknown command")
 			continue
 		} else {
-			err := command.callback(resp)
+			err := command.callback(user, userInput)
 			if err != nil {
 				fmt.Println(err)
 			}
@@ -43,5 +38,8 @@ func startRepl() {
 func cleanInput(text string) []string {
 	t := strings.ToLower(text)
 	s := strings.Fields(t)
+	if len(s) == 1 {
+		s = append(s, "")
+	}
 	return s
 }

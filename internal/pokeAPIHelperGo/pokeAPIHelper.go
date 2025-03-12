@@ -21,3 +21,19 @@ func ReturnLocations(url string) (*LocationAreas, error) {
 	}
 	return &c, nil
 }
+
+func ReturnPokeEncounters(url string) (*PokeEncounters, error) {
+	res, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("error making request: %v", err)
+	}
+	defer res.Body.Close()
+
+	var e PokeEncounters
+	decoder := json.NewDecoder(res.Body)
+	err = decoder.Decode(&e)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body: %v", err)
+	}
+	return &e, nil
+}

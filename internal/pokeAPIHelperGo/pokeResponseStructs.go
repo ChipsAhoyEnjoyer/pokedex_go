@@ -10,3 +10,14 @@ type LocationAreas struct {
 		Name string `json:"name"`
 	} `json:"results"`
 }
+
+type PokeEncounters struct {
+	Cache        *pokeCache.PokeCache
+	LocationName string `json:"name"`
+	Encounters   []struct {
+		Pokemon struct {
+			Name string `json:"name"`
+			URL  string `json:"url"`
+		} `json:"pokemon"`
+	} `json:"pokemon_encounters"`
+}
