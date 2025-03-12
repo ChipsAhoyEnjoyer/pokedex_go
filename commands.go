@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"math/rand"
 	"os"
 
 	"github.com/ChipsAhoyEnjoyer/pokedex_go/internal/pokeAPIHelperGo"
@@ -127,6 +128,32 @@ func commandExplore(userData *userCache, input string) error {
 	return nil
 }
 
+func commandCatch(userData *userCache, input string) error {
+	url := "https://pokeapi.co/api/v2/pokemon/" + input + "/"
+	pokemon, err := pokeAPIHelperGo.ReturnPokemon(url)
+	if err != nil {
+		return fmt.Errorf("the pokemon doesn't exist; error finding pokemon ('%v'): %v", input, err)
+	}
+	fmt.Printf("Throwing a Pokeball at %v...\n", input)
+	playerRoll := rand.Intn(pokemon.BaseExperience)
+	catchRate := rand.Intn(pokemon.BaseExperience)
+	if pokemon.BaseExperience > 200 {
+		playerRoll /= 2
+	} else if pokemon.BaseExperience < 100 {
+		catchRate /= 2
+	}
+	fmt.Printf("player : %v\n", playerRoll)
+	fmt.Printf("roll : %v\n", catchRate)
+	catch := playerRoll > catchRate
+	if catch {
+		fmt.Printf("%v was caught!\n", input)
+		userData.pokedex[input] = *pokemon
+	} else {
+		fmt.Printf("%v escaped...\n", input)
+	}
+	return nil
+}
+
 func generateCommandRegistry() map[string]cliCommand {
 	registry = map[string]cliCommand{
 		"exit": {
@@ -142,22 +169,28 @@ func generateCommandRegistry() map[string]cliCommand {
 		"map": {
 			name: "map",
 			description: `Displays the names of the next 20 location areas in the Pokemon world. 
-			              Each subsequent call to map should display the next 20 locations, 
-						  and so on`,
+			Each subsequent call to map should display the next 20 locations, 
+			and so on`,
 			callback: commandMap,
 		},
 		"mapb": {
 			name: "mapb",
 			description: `Displays the names of the previous 20 location areas in the Pokemon world. 
-			              Each subsequent call to map should display the previous 20 locations, 
-						  and so on`,
+			Each subsequent call to map should display the previous 20 locations, 
+			and so on`,
 			callback: commandMapb,
 		},
 		"explore": {
 			name: "explore",
 			description: `It takes the name of a location area as an argument and returns a list of
-						  pokemon in that area.`,
+			pokemon in that area.`,
 			callback: commandExplore,
+		},
+		"catch": {
+			name: "catch",
+			description: `Throw a Pokeball at a Pokemon for a chance to capture it.
+			The stronger the Pokemon, the harder it is to catch!`,
+			callback: commandCatch,
 		},
 	}
 	return registry

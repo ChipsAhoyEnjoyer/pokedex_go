@@ -12,12 +12,14 @@ const base_url = "https://pokeapi.co/api/v2/location-area/"
 type userCache struct {
 	locations  pokeAPIHelperGo.LocationAreas
 	encounters pokeAPIHelperGo.PokeEncounters
+	pokedex    map[string]pokeAPIHelperGo.Pokemon
 }
 
 func newUser() *userCache {
 	u := userCache{
 		locations:  pokeAPIHelperGo.LocationAreas{Next: base_url},
 		encounters: pokeAPIHelperGo.PokeEncounters{},
+		pokedex:    make(map[string]pokeAPIHelperGo.Pokemon),
 	}
 	u.locations.Cache = pokeCache.NewPokeCache(5 * time.Second)
 	u.encounters.Cache = pokeCache.NewPokeCache(5 * time.Second)

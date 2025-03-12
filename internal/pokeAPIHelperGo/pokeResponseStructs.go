@@ -21,3 +21,16 @@ type PokeEncounters struct {
 		} `json:"pokemon"`
 	} `json:"pokemon_encounters"`
 }
+
+type Pokemon struct {
+	Name           string `json:"name"`
+	BaseExperience int    `json:"base_experience"`
+	Height         int    `json:"height"`
+	Weight         int    `json:"weight"`
+	Abilities      []struct {
+		Ability struct {
+			Name string `json:"name"`
+		} `json:"ability"`
+	} `json:"abilities"`
+	LocationAreaEncounters string `json:"location_area_encounters"`
+}

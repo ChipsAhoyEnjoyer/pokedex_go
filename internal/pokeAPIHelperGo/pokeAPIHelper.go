@@ -37,3 +37,18 @@ func ReturnPokeEncounters(url string) (*PokeEncounters, error) {
 	}
 	return &e, nil
 }
+func ReturnPokemon(url string) (*Pokemon, error) {
+	res, err := http.Get(url)
+	if err != nil {
+		return nil, fmt.Errorf("error making request: %v", err)
+	}
+	defer res.Body.Close()
+
+	var p Pokemon
+	decoder := json.NewDecoder(res.Body)
+	err = decoder.Decode(&p)
+	if err != nil {
+		return nil, fmt.Errorf("error reading response body: %v", err)
+	}
+	return &p, nil
+}
