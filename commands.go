@@ -153,44 +153,92 @@ func commandCatch(userData *userCache, input string) error {
 	}
 	return nil
 }
+func commandInspect(userData *userCache, input string) error {
+	if input == "" {
+		fmt.Println("Inspecting Pokedex entries...")
+		for k := range userData.pokedex {
+			fmt.Printf(" - %v\n", k)
+		}
+		return nil
+	}
+	pokemonInfo, exists := userData.pokedex[input]
+	if !exists {
+		fmt.Printf("%v has not been caught yet\n", input)
+		return nil
+	}
+	fmt.Printf(`
+Name : %v
+Base Experience: %v
+Height : %v
+Weight : %v
+`,
+		pokemonInfo.Name,
+		pokemonInfo.BaseExperience,
+		pokemonInfo.Height,
+		pokemonInfo.Weight,
+	)
+	fmt.Println("\nTypes:")
+	for _, t := range pokemonInfo.Types {
+		fmt.Printf(" - %v\n", t.Type.Name)
+	}
+	fmt.Println("\nAbilities:")
+	for _, a := range pokemonInfo.Abilities {
+		fmt.Printf(" - %v\n", a.Ability.Name)
+	}
+	fmt.Println("\nStats:")
+	for _, s := range pokemonInfo.Stats {
+		fmt.Printf("%v: %v\n", s.Stat.Name, s.BaseStat)
+	}
+	return nil
+}
 
 func generateCommandRegistry() map[string]cliCommand {
 	registry = map[string]cliCommand{
 		"exit": {
 			name:        "exit",
-			description: "Exit the Pokedex",
+			description: "Exit the Pokedex\n",
 			callback:    commandExit,
 		},
 		"help": {
 			name:        "help",
-			description: "Displays a help message",
+			description: "Displays a help message\n",
 			callback:    commandHelp,
 		},
 		"map": {
 			name: "map",
 			description: `Displays the names of the next 20 location areas in the Pokemon world. 
-			Each subsequent call to map should display the next 20 locations, 
-			and so on`,
+Each subsequent call to map should display the next 20 locations, 
+and so on
+`,
 			callback: commandMap,
 		},
 		"mapb": {
 			name: "mapb",
 			description: `Displays the names of the previous 20 location areas in the Pokemon world. 
-			Each subsequent call to map should display the previous 20 locations, 
-			and so on`,
+Each subsequent call to map should display the previous 20 locations, 
+and so on
+`,
 			callback: commandMapb,
 		},
 		"explore": {
 			name: "explore",
 			description: `It takes the name of a location area as an argument and returns a list of
-			pokemon in that area.`,
+pokemon in that area.
+`,
 			callback: commandExplore,
 		},
 		"catch": {
 			name: "catch",
 			description: `Throw a Pokeball at a Pokemon for a chance to capture it.
-			The stronger the Pokemon, the harder it is to catch!`,
+The stronger the Pokemon, the harder it is to catch!
+`,
 			callback: commandCatch,
+		},
+		"inspect": {
+			name: "inspect",
+			description: `Open your Pokedex and view all your caught Pokemons.
+Add the Pokemons name as an argument to view its info`,
+			callback: commandInspect,
 		},
 	}
 	return registry
