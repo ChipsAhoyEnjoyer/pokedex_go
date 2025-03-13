@@ -138,13 +138,13 @@ func commandCatch(userData *userCache, input string) error {
 	playerRoll := rand.Intn(pokemon.BaseExperience)
 	catchRate := rand.Intn(pokemon.BaseExperience)
 	if pokemon.BaseExperience > 200 {
-		playerRoll /= 2
+		playerRoll = (playerRoll / 2) + 50
 	} else if pokemon.BaseExperience < 100 {
 		catchRate /= 2
 	}
 	fmt.Printf("player : %v\n", playerRoll)
 	fmt.Printf("roll : %v\n", catchRate)
-	catch := playerRoll > catchRate
+	catch := playerRoll >= catchRate
 	if catch {
 		fmt.Printf("%v was caught!\n", input)
 		userData.pokedex[input] = *pokemon
@@ -155,11 +155,7 @@ func commandCatch(userData *userCache, input string) error {
 }
 func commandInspect(userData *userCache, input string) error {
 	if input == "" {
-		fmt.Println("Inspecting Pokedex entries...")
-		for k := range userData.pokedex {
-			fmt.Printf(" - %v\n", k)
-		}
-		return nil
+		return fmt.Errorf("please enter a Pokemon name after the 'inspect' command")
 	}
 	pokemonInfo, exists := userData.pokedex[input]
 	if !exists {
@@ -167,11 +163,11 @@ func commandInspect(userData *userCache, input string) error {
 		return nil
 	}
 	fmt.Printf(`
-Name : %v
-Base Experience: %v
-Height : %v
-Weight : %v
-`,
+	Name : %v
+	Base Experience: %v
+	Height : %v
+	Weight : %v
+	`,
 		pokemonInfo.Name,
 		pokemonInfo.BaseExperience,
 		pokemonInfo.Height,
@@ -188,6 +184,13 @@ Weight : %v
 	fmt.Println("\nStats:")
 	for _, s := range pokemonInfo.Stats {
 		fmt.Printf("%v: %v\n", s.Stat.Name, s.BaseStat)
+	}
+	return nil
+}
+func commandPokedex(userData *userCache, input string) error {
+	fmt.Println("Your Pokedex:")
+	for k := range userData.pokedex {
+		fmt.Printf(" - %v\n", k)
 	}
 	return nil
 }
@@ -236,9 +239,14 @@ The stronger the Pokemon, the harder it is to catch!
 		},
 		"inspect": {
 			name: "inspect",
-			description: `Open your Pokedex and view all your caught Pokemons.
-Add the Pokemons name as an argument to view its info`,
+			description: `Inspect your Pokemon.
+Enter your caught Pokemon's name as an argument to view its info`,
 			callback: commandInspect,
+		},
+		"pokedex": {
+			name:        "pokedex",
+			description: "`View your Pokedex.",
+			callback:    commandPokedex,
 		},
 	}
 	return registry
