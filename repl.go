@@ -1,32 +1,27 @@
 package main
 
 import (
-	"bufio"
 	"fmt"
-	"os"
 	"strings"
 
 	"github.com/eiannone/keyboard"
 )
 
 func startRepl() {
-	err := keyEventListener()
-	if err != nil {
-		panic(err)
-	}
 	commandRegistry := generateCommandRegistry()
-
-	response := bufio.NewScanner(os.Stdin)
 	user := newUser()
 
 	for {
-		fmt.Print("Pokedex > ")
-		response.Scan()
-		if response.Text() == "" {
-			fmt.Println("no input...")
+		response, err := keyEventListener()
+		if err != nil {
+			fmt.Printf("Error getting key input: %v\n", err)
 			continue
 		}
-		fullInput := cleanInput(response.Text())
+		if response == "" {
+			fmt.Println("Please enter a command... ")
+			continue
+		}
+		fullInput := cleanInput(response)
 		userCommand, userInput := fullInput[0], fullInput[1]
 		if command, ok := commandRegistry[userCommand]; !ok {
 			fmt.Println("Unknown command")
@@ -50,9 +45,9 @@ func cleanInput(text string) []string {
 	return s
 }
 
-func keyEventListener() error {
+func keyEventListener() (command string, err error) {
 	if err := keyboard.Open(); err != nil {
-		return err
+		return "", err
 	}
 	defer func() {
 		_ = keyboard.Close()
@@ -67,15 +62,18 @@ func keyEventListener() error {
 		currLineCharacterCount := len(prefix) + len(input)
 		char, key, err := keyboard.GetKey()
 		if err != nil {
-			return err
+			return "", err
 		}
 		switch key {
 		case keyboard.KeyEsc:
-			return nil
+			return "", nil
 		case keyboard.KeyBackspace2:
 			if len(input) > 0 {
 				input = input[:len(input)-1]
 			}
+		case keyboard.KeyEnter:
+			fmt.Println()
+			return input, nil
 		default:
 			if key == 0 { // check if key pressed is a special character i.e. ENTER, BACKSPACE, CAPS LOCK, etc.
 				input += string(char)
@@ -89,5 +87,5 @@ func keyEventListener() error {
 		fmt.Print(strings.Repeat(" ", currLineCharacterCount))
 		fmt.Print("\r")
 	}
-	return nil
+	return "", nil
 }
