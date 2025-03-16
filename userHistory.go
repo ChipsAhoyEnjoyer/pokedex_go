@@ -7,29 +7,28 @@ type userHistory struct {
 }
 
 func newUserHistory() *userHistory {
-	return &userHistory{currentIndex: -1, history: []string{}, historyLen: 0}
+	return &userHistory{currentIndex: 0, history: []string{""}, historyLen: 1}
 }
 
 func (uH *userHistory) add(element string) {
-	uH.history = append(uH.history, element)
-	uH.currentIndex = uH.historyLen
+	uH.history[uH.historyLen-1] = element
+	uH.history = append(uH.history, "")
 	uH.historyLen++
+	uH.currentIndex = uH.historyLen - 1
 }
 
 func (uH *userHistory) decrementIndex() (element string, success bool) {
-	if uH.currentIndex > -1 && uH.historyLen > 0 {
-		e := uH.history[uH.currentIndex]
+	if uH.currentIndex > 0 {
 		uH.currentIndex--
-		return e, true
+		return uH.history[uH.currentIndex], true
 	}
 	return "", false
 }
 
 func (uH *userHistory) incrementIndex() (element string, success bool) {
-	if uH.currentIndex+1 < uH.historyLen {
-		e := uH.history[uH.currentIndex]
+	if uH.currentIndex < uH.historyLen-1 {
 		uH.currentIndex++
-		return e, true
+		return uH.history[uH.currentIndex], true
 	}
 	return "", false
 }

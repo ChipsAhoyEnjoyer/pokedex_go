@@ -1,7 +1,6 @@
 package main
 
 import (
-	"container/list"
 	"fmt"
 	"strings"
 
@@ -11,11 +10,11 @@ import (
 func startRepl() {
 	commandRegistry := generateCommandRegistry()
 	user := newUser()
-	userHistory := list.New()
+	cHistory := newUserHistory()
 	fmt.Println("Type exit or help")
 
 	for {
-		response, err := keyEventListener(userHistory)
+		response, err := keyEventListener(cHistory)
 		if err != nil {
 			fmt.Printf("Error getting key input: %v\n", err)
 			continue
@@ -48,7 +47,7 @@ func cleanInput(text string) []string {
 	return s
 }
 
-func keyEventListener(history *list.List) (command string, err error) {
+func keyEventListener(history *userHistory) (command string, err error) {
 	if err := keyboard.Open(); err != nil {
 		return "", err
 	}
@@ -68,14 +67,21 @@ func keyEventListener(history *list.List) (command string, err error) {
 			return "", err
 		}
 		switch key {
-		case keyboard.KeyEsc:
-			return "", nil
+		case keyboard.KeyArrowUp:
+			if element, success := history.decrementIndex(); success {
+				input = element
+			}
+		case keyboard.KeyArrowDown:
+			if element, success := history.incrementIndex(); success {
+				input = element
+			}
 		case keyboard.KeyBackspace2:
 			if len(input) > 0 {
 				input = input[:len(input)-1]
 			}
 		case keyboard.KeyEnter:
 			fmt.Println()
+			history.add(input)
 			return input, nil
 		case keyboard.KeySpace:
 			input += " "
