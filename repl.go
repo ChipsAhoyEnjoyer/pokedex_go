@@ -7,14 +7,9 @@ import (
 	"github.com/eiannone/keyboard"
 )
 
-func startRepl() {
-	commandRegistry := generateCommandRegistry()
-	user := newUser()
-	cHistory := newUserHistory()
-	fmt.Println("Type exit or help")
-
+func startRepl(user *userCache, commandRegistry map[string]cliCommand, commandHistoryBuffer *userHistory) {
 	for {
-		response, err := keyEventListener(cHistory)
+		response, err := keyEventListener(commandHistoryBuffer)
 		if err != nil {
 			fmt.Printf("Error getting key input: %v\n", err)
 			continue

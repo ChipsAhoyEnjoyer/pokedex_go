@@ -1,5 +1,12 @@
 package main
 
 func main() {
-	startRepl()
+	commandRegistry := generateCommandRegistry()
+	user := newUser()
+	commandHistoryBuffer := newUserHistory()
+	startRepl(
+		user,
+		commandRegistry,
+		commandHistoryBuffer,
+	)
 }
