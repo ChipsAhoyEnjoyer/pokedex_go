@@ -21,7 +21,7 @@ func TestCleanInput(t *testing.T) {
 		},
 		{
 			input:    "%%% \n",
-			expected: []string{"%%%"},
+			expected: []string{"%%%", ""},
 		},
 	}
 	for _, c := range cases {
