@@ -34,12 +34,12 @@ func startRepl(user *user, commandRegistry map[string]cliCommand, commandHistory
 }
 
 func cleanInput(text string) []string {
-	t := strings.ToLower(text)
-	s := strings.Fields(t)
-	if len(s) == 1 {
-		s = append(s, "")
+	text = strings.ToLower(text)
+	f := strings.Fields(text)
+	if len(f) == 1 {
+		f = append(f, "")
 	}
-	return s
+	return f
 }
 
 func keyEventListener(history *commandHistory) (command string, err error) {

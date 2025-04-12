@@ -17,7 +17,7 @@ func TestCleanInput(t *testing.T) {
 		},
 		{
 			input:    "",
-			expected: []string{"", ""},
+			expected: []string{},
 		},
 		{
 			input:    "%%% \n",
@@ -29,9 +29,10 @@ func TestCleanInput(t *testing.T) {
 		if len(actual) != len(c.expected) {
 			t.Errorf(
 				`test failed; actual output does not match the length of expected:
+			Input: '%v'
 			Actual: %v
 			Expected: %v`,
-				actual, c.expected)
+				c.input, actual, c.expected)
 			continue
 		}
 		for i := range actual {

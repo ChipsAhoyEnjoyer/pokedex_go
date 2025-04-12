@@ -15,19 +15,14 @@ type cliCommand struct {
 	callback    func(*user, string) error
 }
 
+// TODO: Simulate Pokemon battles
+// TODO: Change Pokemon descriptions to have levels instead of base experience
+// TODO: Add tests for commands
+// TODO: Add a saved state for users
+
 func commandExit(userData *user, input string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
-	return nil
-}
-
-func commandHelp(userData *user, input string, registry map[string]cliCommand) error {
-	fmt.Println("\nWelcome to the Pokedex!")
-	fmt.Print("Usage:\n\n")
-	for com, cliCom := range registry {
-		fmt.Printf("%v: %v\n", com, cliCom.description)
-	}
-	fmt.Println("")
 	return nil
 }
 
@@ -151,6 +146,7 @@ func commandCatch(userData *user, input string) error {
 	}
 	return nil
 }
+
 func commandInspect(userData *user, input string) error {
 	if input == "" {
 		return fmt.Errorf("please enter a Pokemon name after the 'inspect' command")
@@ -185,10 +181,21 @@ func commandInspect(userData *user, input string) error {
 	}
 	return nil
 }
+
 func commandPokedex(userData *user, input string) error {
 	fmt.Println("Your Pokedex:")
 	for k := range userData.pokedex {
 		fmt.Printf(" - %v\n", k)
 	}
+	return nil
+}
+
+func commandHelp(userData *user, input string, registry map[string]cliCommand) error {
+	fmt.Println("\nWelcome to the Pokedex!")
+	fmt.Print("Usage:\n\n")
+	for com, cliCom := range registry {
+		fmt.Printf("%v: %v\n", com, cliCom.description)
+	}
+	fmt.Println("")
 	return nil
 }
