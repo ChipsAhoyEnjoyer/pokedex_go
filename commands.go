@@ -9,21 +9,19 @@ import (
 	"github.com/ChipsAhoyEnjoyer/pokedex_go/internal/pokeAPIHelperGo"
 )
 
-var registry map[string]cliCommand
-
 type cliCommand struct {
 	name        string
 	description string
-	callback    func(*userCache, string) error
+	callback    func(*user, string) error
 }
 
-func commandExit(userData *userCache, input string) error {
+func commandExit(userData *user, input string) error {
 	fmt.Println("Closing the Pokedex... Goodbye!")
 	os.Exit(0)
 	return nil
 }
 
-func commandHelp(userData *userCache, input string) error {
+func commandHelp(userData *user, input string, registry map[string]cliCommand) error {
 	fmt.Println("\nWelcome to the Pokedex!")
 	fmt.Print("Usage:\n\n")
 	for com, cliCom := range registry {
@@ -33,7 +31,7 @@ func commandHelp(userData *userCache, input string) error {
 	return nil
 }
 
-func commandMap(userData *userCache, input string) error {
+func commandMap(userData *user, input string) error {
 	resp := pokeAPIHelperGo.LocationAreas{}
 
 	if userData.locations.Next == "" {
@@ -65,7 +63,7 @@ func commandMap(userData *userCache, input string) error {
 	return nil
 }
 
-func commandMapb(userData *userCache, input string) error {
+func commandMapb(userData *user, input string) error {
 	resp := pokeAPIHelperGo.LocationAreas{}
 
 	if userData.locations.Prev == "" {
@@ -97,7 +95,7 @@ func commandMapb(userData *userCache, input string) error {
 	return nil
 }
 
-func commandExplore(userData *userCache, input string) error {
+func commandExplore(userData *user, input string) error {
 	url := "https://pokeapi.co/api/v2/location-area/" + input + "/"
 
 	data := &pokeAPIHelperGo.PokeEncounters{}
@@ -128,7 +126,7 @@ func commandExplore(userData *userCache, input string) error {
 	return nil
 }
 
-func commandCatch(userData *userCache, input string) error {
+func commandCatch(userData *user, input string) error {
 	url := "https://pokeapi.co/api/v2/pokemon/" + input + "/"
 	pokemon, err := pokeAPIHelperGo.ReturnPokemon(url)
 	if err != nil {
@@ -153,7 +151,7 @@ func commandCatch(userData *userCache, input string) error {
 	}
 	return nil
 }
-func commandInspect(userData *userCache, input string) error {
+func commandInspect(userData *user, input string) error {
 	if input == "" {
 		return fmt.Errorf("please enter a Pokemon name after the 'inspect' command")
 	}
@@ -187,67 +185,10 @@ func commandInspect(userData *userCache, input string) error {
 	}
 	return nil
 }
-func commandPokedex(userData *userCache, input string) error {
+func commandPokedex(userData *user, input string) error {
 	fmt.Println("Your Pokedex:")
 	for k := range userData.pokedex {
 		fmt.Printf(" - %v\n", k)
 	}
 	return nil
-}
-
-func generateCommandRegistry() map[string]cliCommand {
-	registry = map[string]cliCommand{
-		"exit": {
-			name:        "exit",
-			description: "Exit the Pokedex\n",
-			callback:    commandExit,
-		},
-		"help": {
-			name:        "help",
-			description: "Displays a help message\n",
-			callback:    commandHelp,
-		},
-		"map": {
-			name: "map",
-			description: `Displays the names of the next 20 location areas in the Pokemon world. 
-Each subsequent call to map should display the next 20 locations, 
-and so on
-`,
-			callback: commandMap,
-		},
-		"mapb": {
-			name: "mapb",
-			description: `Displays the names of the previous 20 location areas in the Pokemon world. 
-Each subsequent call to map should display the previous 20 locations, 
-and so on
-`,
-			callback: commandMapb,
-		},
-		"explore": {
-			name: "explore",
-			description: `It takes the name of a location area as an argument and returns a list of
-pokemon in that area.
-`,
-			callback: commandExplore,
-		},
-		"catch": {
-			name: "catch",
-			description: `Throw a Pokeball at a Pokemon for a chance to capture it.
-The stronger the Pokemon, the harder it is to catch!
-`,
-			callback: commandCatch,
-		},
-		"inspect": {
-			name: "inspect",
-			description: `Inspect your Pokemon.
-Enter your caught Pokemon's name as an argument to view its info`,
-			callback: commandInspect,
-		},
-		"pokedex": {
-			name:        "pokedex",
-			description: "`View your Pokedex.",
-			callback:    commandPokedex,
-		},
-	}
-	return registry
 }

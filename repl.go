@@ -7,7 +7,7 @@ import (
 	"github.com/eiannone/keyboard"
 )
 
-func startRepl(user *userCache, commandRegistry map[string]cliCommand, commandHistoryBuffer *userHistory) {
+func startRepl(user *user, commandRegistry map[string]cliCommand, commandHistoryBuffer *commandHistory) {
 	for {
 		response, err := keyEventListener(commandHistoryBuffer)
 		if err != nil {
@@ -42,7 +42,7 @@ func cleanInput(text string) []string {
 	return s
 }
 
-func keyEventListener(history *userHistory) (command string, err error) {
+func keyEventListener(history *commandHistory) (command string, err error) {
 	if err := keyboard.Open(); err != nil {
 		return "", err
 	}
