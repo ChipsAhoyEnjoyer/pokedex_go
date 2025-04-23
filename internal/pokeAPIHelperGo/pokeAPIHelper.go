@@ -4,51 +4,45 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+
+	"github.com/ChipsAhoyEnjoyer/pokedex_go/internal/pokeCache"
 )
 
-func ReturnLocations(url string) (*LocationAreas, error) {
+func FetchData(url string, emptyPayload any) (err error) {
 	res, err := http.Get(url)
 	if err != nil {
-		return nil, fmt.Errorf("error making request: %v", err)
+		return fmt.Errorf("error making request: %v", err)
 	}
 	defer res.Body.Close()
-
-	var c LocationAreas
 	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(&c)
+	err = decoder.Decode(&emptyPayload)
 	if err != nil {
-		return nil, fmt.Errorf("error reading response body: %v", err)
+		return fmt.Errorf("error reading response body: %v", err)
 	}
-	return &c, nil
+	return nil
 }
 
-func ReturnPokeEncounters(url string) (*PokeEncounters, error) {
-	res, err := http.Get(url)
-	if err != nil {
-		return nil, fmt.Errorf("error making request: %v", err)
+func GetOrCacheLocationData(nextURL string, cache *pokeCache.PokeCache) (locs *LocationAreas, err error) {
+	l := &LocationAreas{}
+	if nextURL == "" {
+		return nil, fmt.Errorf("no more areas to explore")
+	} else if val, exists := cache.Get(nextURL); exists {
+		err := json.Unmarshal(val, l)
+		if err != nil {
+			return nil, err
+		}
+		return l, nil
 	}
-	defer res.Body.Close()
+	err = FetchData(nextURL, l)
+	if err != nil {
+		return nil, err
+	}
+	// save to cache
+	jsonData, err := json.Marshal(l)
+	if err != nil {
+		return nil, fmt.Errorf("error marshaling data to add to cache: %v", err)
+	}
+	cache.Add(nextURL, jsonData)
 
-	var e PokeEncounters
-	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(&e)
-	if err != nil {
-		return nil, fmt.Errorf("error reading response body: %v", err)
-	}
-	return &e, nil
-}
-func ReturnPokemon(url string) (*Pokemon, error) {
-	res, err := http.Get(url)
-	if err != nil {
-		return nil, fmt.Errorf("error making request: %v", err)
-	}
-	defer res.Body.Close()
-
-	var p Pokemon
-	decoder := json.NewDecoder(res.Body)
-	err = decoder.Decode(&p)
-	if err != nil {
-		return nil, fmt.Errorf("error reading response body: %v", err)
-	}
-	return &p, nil
+	return l, nil
 }
