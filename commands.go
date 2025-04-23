@@ -1,7 +1,6 @@
 package main
 
 import (
-	"encoding/json"
 	"fmt"
 	"math/rand"
 	"os"
@@ -47,43 +46,17 @@ func commandMapb(user *user, input string, locations *pokeAPIHelperGo.LocationAr
 	return nil
 }
 
-func commandExplore(user *user, input string) error {
-	url := "https://pokeapi.co/api/v2/location-area/" + input + "/"
-
-	data := &pokeAPIHelperGo.PokeEncounters{}
-	if input == "" {
-		return fmt.Errorf("please type in the name of an area you want to explore")
-	} else if val, exists := user.encounters.Cache.Get(input); exists {
-		if err := json.Unmarshal(val, data); err != nil {
-			return fmt.Errorf("error unmarshaling data from cache: '%v'", err)
-		}
-	} else {
-		encounters, err := pokeAPIHelperGo.FetchData(url, &pokeAPIHelperGo.PokeEncounters{})
-		if err != nil {
-			return fmt.Errorf("error retreiving encounters; no such area exists ('%v')", input)
-		}
-		data = encounters
-		jsonData, err := json.Marshal(encounters)
-		if err != nil {
-			return fmt.Errorf("error marshaling data to add to cache: %v", err)
-		}
-		user.encounters.Cache.Add(input, jsonData)
-	}
+func commandExplore(user *user, input string, encounters *pokeAPIHelperGo.PokeEncounters) error {
 	fmt.Printf("Exploring %v...\n", input)
 	fmt.Println("Found Pokemon:")
-	for _, mon := range data.Encounters {
+	for _, mon := range encounters.Encounters {
 		fmt.Printf("- %v\n", mon.Pokemon.Name)
 	}
 
 	return nil
 }
 
-func commandCatch(user *user, input string) error {
-	url := "https://pokeapi.co/api/v2/pokemon/" + input + "/"
-	pokemon, err := pokeAPIHelperGo.ReturnPokemon(url)
-	if err != nil {
-		return fmt.Errorf("the pokemon doesn't exist; error finding pokemon ('%v'): %v", input, err)
-	}
+func commandCatch(user *user, input string, pokemon *pokeAPIHelperGo.Pokemon) error {
 	fmt.Printf("Throwing a Pokeball at %v...\n", input)
 	playerRoll := rand.Intn(pokemon.BaseExperience)
 	catchRate := rand.Intn(pokemon.BaseExperience)
@@ -173,14 +146,54 @@ func addCommand(
 func generateCommands() map[string]cliCommand {
 	registry := make(map[string]cliCommand)
 
-	addCommand(registry, "exit", "Exit the Pokedex.", commandExit)
-	addCommand(registry, "help", "Displays a help message.", registryMiddleware(commandHelp))
-	addCommand(registry, "map", "Displays the names of the next 20 location areas in the Pokemon world.", commandMap)
-	addCommand(registry, "mapb", "Displays the names of the previous 20 location areas in the Pokemon world.", commandMapb)
-	addCommand(registry, "explore", "Takes a location area as an argument and lists all Pokemon in that area.", commandExplore)
-	addCommand(registry, "catch", "Throw a Pokeball for a chance to capture it a Pokemon.", commandCatch)
-	addCommand(registry, "inspect", "Inspect your Pokemon.", commandInspect)
-	addCommand(registry, "pokedex", "View your Pokedex.", commandPokedex)
+	addCommand(
+		registry,
+		"exit",
+		"Exit the Pokedex.",
+		commandExit,
+	)
+	addCommand(
+		registry,
+		"help",
+		"Displays a help message.",
+		registryMiddleware(commandHelp),
+	)
+	addCommand(
+		registry,
+		"map",
+		"Displays the names of the next 20 location areas in the Pokemon world.",
+		mapMiddleware(commandMap),
+	)
+	addCommand(
+		registry,
+		"mapb",
+		"Displays the names of the previous 20 location areas in the Pokemon world.",
+		mapbMiddleware(commandMapb),
+	)
+	addCommand(
+		registry,
+		"explore",
+		"Takes a location area as an argument and lists all Pokemon in that area.",
+		exploreMiddleware(commandExplore),
+	)
+	addCommand(
+		registry,
+		"catch",
+		"Throw a Pokeball for a chance to capture it a Pokemon.",
+		catchMiddleware(commandCatch),
+	)
+	addCommand(
+		registry,
+		"inspect",
+		"Inspect your Pokemon.",
+		commandInspect,
+	)
+	addCommand(
+		registry,
+		"pokedex",
+		"View your Pokedex.",
+		commandPokedex,
+	)
 
 	return registry
 }

@@ -16,11 +16,40 @@ func registryMiddleware(f func(*user, string, map[string]cliCommand) error) func
 
 func mapMiddleware(f func(*user, string, *pokeAPIHelperGo.LocationAreas) error) func(*user, string) error {
 	return func(u *user, s string) error {
-		locations, err := pokeAPIHelperGo.GetOrCacheLocationData(u.locations.Next, u.locations.Cache)
+		locations, err := pokeAPIHelperGo.GetLocationData(u.locations.Next, u.locations.Cache)
 		if err != nil {
 			return err
 		}
-		f(u, s, locations)
-		return nil
+		return f(u, s, locations)
+	}
+}
+
+func mapbMiddleware(f func(*user, string, *pokeAPIHelperGo.LocationAreas) error) func(*user, string) error {
+	return func(u *user, s string) error {
+		locations, err := pokeAPIHelperGo.GetLocationData(u.locations.Prev, u.locations.Cache)
+		if err != nil {
+			return err
+		}
+		return f(u, s, locations)
+	}
+}
+
+func exploreMiddleware(f func(*user, string, *pokeAPIHelperGo.PokeEncounters) error) func(*user, string) error {
+	return func(u *user, s string) error {
+		encounters, err := pokeAPIHelperGo.GetEncountersData(s, u.encounters.Cache)
+		if err != nil {
+			return err
+		}
+		return f(u, s, encounters)
+	}
+}
+
+func catchMiddleware(f func(*user, string, *pokeAPIHelperGo.Pokemon) error) func(*user, string) error {
+	return func(u *user, s string) error {
+		p, err := pokeAPIHelperGo.FetchPokemonFromAPI(s)
+		if err != nil {
+			return err
+		}
+		return f(u, s, p)
 	}
 }
